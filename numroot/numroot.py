@@ -2,7 +2,14 @@
 This module implement 3 methods to solve equations of the form f(x) = 0
 """
 
+from dataclasses import dataclass
 from .exceptions import InvalidIntervalException, ConvergenceException
+
+@dataclass(frozen=True)
+class Result:
+    """Data holding class for the result of the solver's algorithms"""
+    root: float
+    iterations: int
 
 class NonlinearSolver:
     """Solver class to hold the different algorithms"""
@@ -23,16 +30,19 @@ class NonlinearSolver:
         epsilon -- degree of precision for the algorithm to stop (default 1e-3)
         maxiter -- maximum number of iterations (default 100)
         iter -- current iteration (default 0)
+
+        Returns:
+        data holder object with the root found and number of iterations to find it
         """
 
         f_a = func(x_a)
         f_b = func(x_b)
 
         if abs(f_a) < epsilon:
-            return x_a, n_iter
+            return Result(x_a, n_iter)
 
         if abs(f_b) < epsilon:
-            return x_b, n_iter
+            return Result(x_b, n_iter)
 
         if not force and f_a * f_b > 0:
             raise InvalidIntervalException("func(x_a) and func(x_b) should have opposite signs. \
@@ -44,7 +54,7 @@ class NonlinearSolver:
 
         if abs(x_a-x_b) < epsilon:
             # If the algorithm converged, x_a ~ x_b so it doesn't matter
-            return x_a, n_iter
+            return Result(x_a, n_iter)
 
         x_m = (x_a+x_b)/2
         f_m = func(x_m)
@@ -55,8 +65,8 @@ class NonlinearSolver:
         return self.bisect(func, x_m, x_b, True, epsilon, maxiter, n_iter+1)
 
 # pylint: disable=too-many-arguments
-    def newton_ralphson(self, func, dfunc, x_0, epsilon=1E-3, maxiter=100, n_iter=0):
-        """Newton-Ralphson algorithm
+    def newton_raphson(self, func, dfunc, x_0, epsilon=1E-3, maxiter=100, n_iter=0):
+        """Newton-Raphson algorithm
         
         Arguments:
         func -- real 1D function
@@ -65,6 +75,9 @@ class NonlinearSolver:
         epsilon -- degree of precision for the algorithm to stop (default 1e-3)
         maxiter -- maximum number of iterations (default 100)
         iter -- current iteration (default 0)
+
+        Returns:
+        data holder object with the root found and number of iterations to find it
         """
         x_1 = x_0 - func(x_0)/dfunc(x_0)
 
@@ -73,9 +86,9 @@ class NonlinearSolver:
                 given amount of iterations.")
 
         if abs(x_1-x_0) < epsilon or func(x_1) < epsilon:
-            return x_1, n_iter
+            return Result(x_1, n_iter)
 
-        return self.newton_ralphson(func, dfunc, x_1, epsilon, maxiter, n_iter+1)
+        return self.newton_raphson(func, dfunc, x_1, epsilon, maxiter, n_iter+1)
 
 # pylint: disable=too-many-arguments
     def secant(self, func, x_0, x_1, epsilon=1E-3, maxiter=100, n_iter=0):
@@ -88,6 +101,9 @@ class NonlinearSolver:
         epsilon -- degree of precision for the algorithm to stop (default 1e-3)
         maxiter -- maximum number of iterations (default 100)
         iter -- current iteration (default 0)
+
+        Returns:
+        data holder object with the root found and number of iterations to find it
         """
 
         if n_iter >= maxiter:
@@ -95,7 +111,7 @@ class NonlinearSolver:
                 given amount of iterations.")
 
         if abs(x_1-x_0) < epsilon or func(x_1) < epsilon:
-            return x_1, n_iter
+            return Result(x_1, n_iter)
 
         f_0 = func(x_0)
         f_1 = func(x_1)
