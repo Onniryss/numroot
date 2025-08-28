@@ -110,7 +110,7 @@ class NonlinearSolver:
             raise ConvergenceException("The Secant algorithm couldn't converge in the \
                 given amount of iterations.")
 
-        if abs(x_1-x_0) < epsilon or func(x_1) < epsilon:
+        if abs(func(x_1)-func(x_0)) < epsilon or func(x_1) < epsilon:
             return Result(x_1, n_iter)
 
         f_0 = func(x_0)
